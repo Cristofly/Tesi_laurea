@@ -10,7 +10,10 @@ Percorso: `arduino/sensor_sender/sensor_sender.ino`
    - `kSsid`
    - `kPassword`
    - `kApiUrl` (es: `http://192.168.1.10:8000/api/v1/measurements`)
-3. Collega i sensori ai pin analogici definiti nello sketch.
+3. Collega i sensori:
+   - DHT22 su `kDhtPin` (umidità + temperatura).
+   - Sensore laser (barriera) su `kLaserPin` come input digitale.
+   - Sensore luce analogico su `kLightPin`.
 4. Compila e carica lo sketch.
 
 ## Backend API + Database
@@ -28,11 +31,11 @@ Percorso: `server/`
    ```json
    {
      "device_id": "arduino-01",
-     "timestamp_ms": 123456,
      "temperature_c": 22.5,
      "humidity_percent": 55.2,
-     "light_percent": 80.1
+     "light_percent": 80.1,
+     "access_detected": 1
    }
    ```
 
-Il database SQLite viene creato automaticamente come `sensor_data.db` nella cartella `server/`.
+Il database SQLite viene creato automaticamente come `sensor_data.db` nella cartella `server/`. L'orario data/ora è salvato dal server nel campo `captured_at`.

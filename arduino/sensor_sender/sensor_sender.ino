@@ -1,12 +1,14 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <DHT.h>
 
 const char *kSsid = "YOUR_WIFI_SSID";
 const char *kPassword = "YOUR_WIFI_PASSWORD";
 const char *kApiUrl = "http://YOUR_SERVER_IP:8000/api/v1/measurements";
 
-const int kTempPin = 34;
-const int kHumidityPin = 35;
+const int kDhtPin = 4;
+const int kDhtType = DHT22;
+const int kLaserPin = 27;
 const int kLightPin = 32;
 
 const char *kDeviceId = "arduino-01";
@@ -14,24 +16,15 @@ const char *kDeviceId = "arduino-01";
 unsigned long kPostIntervalMs = 5000;
 unsigned long lastPostMs = 0;
 
-float readVoltage(int pin) {
-  int raw = analogRead(pin);
-  return (raw / 4095.0) * 3.3;
-}
-
-float readTemperatureC() {
-  float voltage = readVoltage(kTempPin);
-  return (voltage - 0.5) * 100.0;
-}
-
-float readHumidityPercent() {
-  float voltage = readVoltage(kHumidityPin);
-  return (voltage / 3.3) * 100.0;
-}
+DHT dht(kDhtPin, kDhtType);
 
 float readLightPercent() {
-  float voltage = readVoltage(kLightPin);
-  return (voltage / 3.3) * 100.0;
+  int raw = analogRead(kLightPin);
+  return (raw / 4095.0) * 100.0;
+}
+
+int readAccessDetected() {
+  return digitalRead(kLaserPin) == HIGH ? 1 : 0;
 }
 
 void connectWifi() {
@@ -51,6 +44,8 @@ void connectWifi() {
 void setup() {
   Serial.begin(115200);
   analogReadResolution(12);
+  pinMode(kLaserPin, INPUT_PULLUP);
+  dht.begin();
   delay(1000);
   connectWifi();
 }
@@ -67,16 +62,17 @@ void loop() {
   }
   lastPostMs = now;
 
-  float tempC = readTemperatureC();
-  float humidity = readHumidityPercent();
+  float tempC = dht.readTemperature();
+  float humidity = dht.readHumidity();
+  int accessDetected = readAccessDetected();
   float light = readLightPercent();
 
   String payload = String("{") +
                    "\"device_id\":\"" + kDeviceId + "\"," +
-                   "\"timestamp_ms\":" + String(now) + "," +
                    "\"temperature_c\":" + String(tempC, 2) + "," +
                    "\"humidity_percent\":" + String(humidity, 2) + "," +
-                   "\"light_percent\":" + String(light, 2) +
+                   "\"light_percent\":" + String(light, 2) + "," +
+                   "\"access_detected\":" + String(accessDetected) +
                    "}";
 
   HTTPClient http;

@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS measurements (
     temperature_c REAL,
     humidity_percent REAL,
     light_percent REAL,
-    timestamp_ms INTEGER,
+    access_detected INTEGER NOT NULL DEFAULT 0,
     captured_at TEXT NOT NULL
 );

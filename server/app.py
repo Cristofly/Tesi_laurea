@@ -31,7 +31,7 @@ def create_measurement():
     temperature_c = payload.get("temperature_c")
     humidity_percent = payload.get("humidity_percent")
     light_percent = payload.get("light_percent")
-    timestamp_ms = payload.get("timestamp_ms")
+    access_detected = payload.get("access_detected", 0)
 
     if not device_id:
         return jsonify({"error": "device_id is required"}), 400
@@ -46,7 +46,7 @@ def create_measurement():
                 temperature_c,
                 humidity_percent,
                 light_percent,
-                timestamp_ms,
+                access_detected,
                 captured_at
             ) VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -55,7 +55,7 @@ def create_measurement():
                 temperature_c,
                 humidity_percent,
                 light_percent,
-                timestamp_ms,
+                access_detected,
                 captured_at,
             ),
         )
